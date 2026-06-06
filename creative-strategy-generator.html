@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ad Strategy Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#09090f;--surface:#111118;--card:#16161f;--border:#252535;--white:#f0f0f8;--muted:#6b6b8a;--dim:#3a3a55;--accent:#7c6af7;--accent-glow:rgba(124,106,247,0.15);--green:#4adea0;--green-bg:rgba(74,222,160,0.08);--green-border:rgba(74,222,160,0.3);--amber:#f7c84a;--amber-bg:rgba(247,200,74,0.08);--amber-border:rgba(247,200,74,0.3);--red:#f76a6a;--red-bg:rgba(247,106,106,0.08);--red-border:rgba(247,106,106,0.3)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--white);font-family:'DM Sans',sans-serif;font-size:14px;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(124,106,247,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(124,106,247,0.025) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0}
+.app{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:52px 28px 100px}
+.ey{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.2em;color:var(--accent);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.ey::before{content:'';display:inline-block;width:22px;height:1px;background:var(--accent)}
+h1{font-size:36px;font-weight:600;letter-spacing:-.03em;color:var(--white);line-height:1.1;margin-bottom:12px}
+h1 em{font-style:normal;background:linear-gradient(135deg,var(--accent),#f76a8a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:var(--muted);font-size:14px;line-height:1.65;max-width:480px;margin-bottom:1.5rem}
+.notion-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;background:var(--green-bg);border:1px solid var(--green-border);border-radius:20px;font-size:11px;color:var(--green);margin-bottom:2rem}
+.notion-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pdot 2s ease-in-out infinite}
+@keyframes pdot{0%,100%{opacity:1}50%{opacity:.4}}
+.form-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;margin-bottom:24px}
+.sep{display:flex;align-items:center;gap:12px;margin:1.5rem 0 1.1rem}
+.sep:first-child{margin-top:0}
+.sep-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);white-space:nowrap}
+.sep-line{flex:1;height:1px;background:var(--border)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.s2{grid-column:span 2}
+label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+label .req{color:var(--accent);margin-left:2px}
+input,textarea,select{background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--white);font-family:'DM Sans',sans-serif;font-size:13px;padding:10px 13px;outline:none;transition:border-color .2s,box-shadow .2s;width:100%;resize:none}
+input::placeholder,textarea::placeholder{color:var(--dim)}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b6b8a' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-color:var(--card)}
+select option{background:#1a1a28}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{display:flex;align-items:center;gap:6px;padding:6px 12px;background:var(--card);border:1px solid var(--border);border-radius:7px;cursor:pointer;font-size:12px;color:var(--muted);user-select:none;transition:all .15s}
+.chip.on{border-color:var(--accent);background:var(--accent-glow);color:var(--white)}
+.chip-dot{width:8px;height:8px;border-radius:50%;border:1px solid currentColor;flex-shrink:0}
+.chip.on .chip-dot{background:currentColor}
+.steps{display:flex;gap:8px;margin-top:1rem}
+.step{flex:1;padding:8px 12px;border-radius:8px;font-size:11px;text-align:center;border:1px solid var(--border);color:var(--dim);transition:all .3s}
+.step.active{border-color:var(--accent);background:var(--accent-glow);color:var(--white)}
+.step.done{border-color:var(--green-border);background:var(--green-bg);color:var(--green)}
+.step.error{border-color:var(--red-border);background:var(--red-bg);color:var(--red)}
+.btn{width:100%;padding:15px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin-top:1.25rem;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn:hover{background:#9580ff;transform:translateY(-1px);box-shadow:0 10px 28px rgba(124,106,247,.35)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.spinner{width:15px;height:15px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.err{background:var(--red-bg);border:1px solid var(--red-border);border-radius:8px;padding:12px 15px;color:var(--red);font-size:12px;margin-top:12px;line-height:1.5}
+#output{margin-top:2rem}
+.success-card{background:var(--green-bg);border:1px solid var(--green-border);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem}
+.success-title{font-size:16px;font-weight:600;color:var(--green);margin-bottom:6px}
+.success-body{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:1rem}
+.notion-link{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;background:var(--card);border:1px solid var(--green-border);border-radius:8px;font-size:13px;font-weight:500;color:var(--green);text-decoration:none;transition:opacity .15s}
+.notion-link:hover{opacity:.8}
+.preview{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-top:1rem}
+.prev-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin-bottom:.75rem;display:flex;align-items:center;gap:8px}
+.prev-lbl::after{content:'';flex:1;height:1px;background:var(--border)}
+.prev-sec{margin-bottom:1rem}
+.prev-sec-title{font-size:11px;font-weight:500;color:var(--white);margin-bottom:.35rem}
+.prev-text{font-size:12px;color:var(--muted);line-height:1.65}
+.prev-hooks{display:flex;flex-direction:column;gap:6px;margin-top:.5rem}
+.prev-hook{padding:8px 12px;background:var(--surface);border-radius:7px;font-size:12px;color:var(--white);font-style:italic;border-left:2px solid var(--accent)}
+.prev-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:.5rem}
+.prev-tag{font-size:10px;padding:3px 9px;border-radius:5px;background:var(--surface);color:var(--muted);border:1px solid var(--border)}
+.new-btn{padding:10px 20px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;transition:all .15s;margin-top:.75rem;display:inline-flex;align-items:center;gap:6px}
+.new-btn:hover{border-color:var(--accent);color:var(--white)}
+@media(max-width:600px){.grid{grid-template-columns:1fr}.field.s2{grid-column:span 1}.steps{flex-direction:column}.app{padding:32px 18px 80px}.form-box{padding:22px 18px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="ey">Creative intelligence tool</div>
+  <h1>Ad Strategy <em>Generator</em></h1>
+  <p class="sub">Fill in the brief. Claude generates the full strategy and saves it directly as a new page in your Notion workspace — ready to share with your team.</p>
+  <div class="notion-badge"><div class="notion-dot"></div>Connected to Notion &middot; Ad Strategy Briefs</div>
+
+  <div class="form-box" id="form-box">
+    <div class="sep"><span class="sep-lbl">Brand &amp; product</span><div class="sep-line"></div></div>
+    <div class="grid">
+      <div class="field"><label>Brief name <span class="req">*</span></label><input id="briefName" placeholder="e.g. IG Markets SG &mdash; Q3 2026"/></div>
+      <div class="field"><label>Brand name <span class="req">*</span></label><input id="brand" placeholder="e.g. IG Markets"/></div>
+      <div class="field"><label>Industry <span class="req">*</span></label><input id="industry" placeholder="e.g. Fintech, SaaS, E-commerce"/></div>
+      <div class="field"><label>Client</label><input id="client" placeholder="Agency client name (if applicable)"/></div>
+      <div class="field s2"><label>Product / service <span class="req">*</span></label><textarea id="product" rows="2" placeholder="What does it do? Key features, differentiators, offers..."></textarea></div>
+      <div class="field s2"><label>Key USPs &amp; proof points</label><textarea id="usps" rows="2" placeholder="e.g. 13,000+ markets, MAS regulated, founded 1974, S$2,888 bonus..."></textarea></div>
+    </div>
+    <div class="sep"><span class="sep-lbl">Audience &amp; market</span><div class="sep-line"></div></div>
+    <div class="grid">
+      <div class="field"><label>Target market <span class="req">*</span></label><input id="market" placeholder="e.g. Singapore, SEA, US"/></div>
+      <div class="field"><label>Age range</label><input id="age" placeholder="e.g. 25&ndash;45"/></div>
+      <div class="field s2"><label>Audience description <span class="req">*</span></label><textarea id="audience" rows="2" placeholder="Who are they? What do they want, fear, aspire to?"></textarea></div>
+    </div>
+    <div class="sep"><span class="sep-lbl">Campaign</span><div class="sep-line"></div></div>
+    <div class="grid">
+      <div class="field"><label>Goal <span class="req">*</span></label>
+        <select id="goal"><option value="">Select goal...</option><option>Account sign-ups / leads</option><option>App installs</option><option>Brand awareness</option><option>Purchase / conversion</option><option>Retargeting / re-engagement</option><option>Trial / demo bookings</option></select>
+      </div>
+      <div class="field"><label>Funnel stage</label>
+        <select id="funnel"><option value="">Select...</option><option>Top of funnel (cold)</option><option>Middle of funnel (warm)</option><option>Bottom of funnel (hot)</option><option>Retargeting</option><option>Full funnel</option></select>
+      </div>
+      <div class="field"><label>Ad tone</label>
+        <select id="tone"><option value="">Select...</option><option>Confident &amp; premium</option><option>Educational &amp; helpful</option><option>Urgent &amp; direct</option><option>Aspirational &amp; lifestyle</option><option>Contrarian &amp; bold</option><option>Friendly &amp; approachable</option></select>
+      </div>
+      <div class="field"><label>Platforms</label>
+        <div class="chips" id="platforms">
+          <div class="chip" onclick="toggleChip(this)" data-val="TikTok"><div class="chip-dot"></div>TikTok</div>
+          <div class="chip" onclick="toggleChip(this)" data-val="Meta"><div class="chip-dot"></div>Meta</div>
+          <div class="chip" onclick="toggleChip(this)" data-val="YouTube"><div class="chip-dot"></div>YouTube</div>
+          <div class="chip" onclick="toggleChip(this)" data-val="LinkedIn"><div class="chip-dot"></div>LinkedIn</div>
+          <div class="chip" onclick="toggleChip(this)" data-val="Google Display"><div class="chip-dot"></div>Google</div>
+        </div>
+      </div>
+    </div>
+    <div class="sep"><span class="sep-lbl">Constraints</span><div class="sep-line"></div></div>
+    <div class="grid">
+      <div class="field s2"><label>Compliance / regulatory context</label><textarea id="compliance" rows="2" placeholder="e.g. MAS regulated &mdash; must include risk disclaimer, no guaranteed returns..."></textarea></div>
+      <div class="field s2"><label>Things to avoid</label><textarea id="avoid" rows="2" placeholder="e.g. No competitor mentions, avoid aggressive FOMO, no hypey language..."></textarea></div>
+    </div>
+    <div id="err" class="err" style="display:none"></div>
+    <button class="btn" id="genBtn" onclick="generate()">
+      <div class="spinner" id="spin"></div>
+      <span id="btnLbl">Generate &amp; save to Notion &rarr;</span>
+    </button>
+    <div id="steps-wrap" style="display:none;margin-top:1rem">
+      <div class="steps">
+        <div class="step" id="s1">&#9889; Generating strategy</div>
+        <div class="step" id="s2">&#128196; Building Notion page</div>
+        <div class="step" id="s3">&#10003; Saved to Notion</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="output"></div>
+</div>
+
+<script>
+function toggleChip(el){el.classList.toggle('on')}
+function gv(id){return(document.getElementById(id)?.value||'').trim()}
+function chips(){return[...document.querySelectorAll('#platforms .chip.on')].map(c=>c.dataset.val)}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+function setStep(n,state){
+  for(let i=1;i<=3;i++){
+    const el=document.getElementById('s'+i);
+    el.className='step'+(i<n?' done':i===n?' '+state:'');
+  }
+}
+
+async function callClaude(prompt){
+  const res=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:8000,messages:[{role:'user',content:prompt}]})
+  });
+  if(!res.ok){const t=await res.text();throw new Error('Claude API '+res.status+': '+t.slice(0,120))}
+  const d=await res.json();
+  return(d.content||[]).map(b=>b.text||'').join('').trim();
+}
+
+function extractJSON(raw){
+  const clean=raw.replace(/^```json\s*/,'').replace(/^```\s*/,'').replace(/```$/,'').trim();
+  try{return JSON.parse(clean)}catch(_){}
+  const s=clean.indexOf('{'),e=clean.lastIndexOf('}');
+  if(s!==-1&&e>s){try{return JSON.parse(clean.slice(s,e+1))}catch(_){}}
+  let str=clean.slice(s!==-1?s:0);
+  let inStr=false,esc2=false;const stack=[];
+  for(let i=0;i<str.length;i++){
+    const c=str[i];
+    if(esc2){esc2=false;continue}
+    if(c==='\\'&&inStr){esc2=true;continue}
+    if(c==='"'){inStr=!inStr;continue}
+    if(inStr)continue;
+    if(c==='{'||c==='[')stack.push(c==='{'?'}':']');
+    if(c==='}'||c===']')stack.pop();
+  }
+  if(inStr)str+='"';
+  str+=stack.reverse().join('');
+  try{return JSON.parse(str)}catch(e){throw new Error('Could not parse JSON: '+e.message)}
+}
+
+async function callNotionMCP(tool,params){
+  const res=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      model:'claude-sonnet-4-20250514',
+      max_tokens:2000,
+      mcp_servers:[{type:'url',url:'https://mcp.notion.com/mcp',name:'notion'}],
+      messages:[{role:'user',content:'Call the Notion MCP tool "'+tool+'" with these exact parameters and return only the raw JSON result with no explanation:\n'+JSON.stringify(params,null,2)}]
+    })
+  });
+  if(!res.ok){const t=await res.text();throw new Error('Notion MCP '+res.status+': '+t.slice(0,200))}
+  return await res.json();
+}
+
+async function saveToNotion(brief,strategy){
+  const platforms=brief.platforms.join(', ')||'Not specified';
+  const angles=(strategy.angles||[]).map((a,i)=>'**'+(i+1)+'. '+a.name+'** - *'+a.trigger+'*\n'+a.explanation).join('\n\n');
+  const hooks=(strategy.hooks||[]).map((h,i)=>(i+1)+'. "'+h.text+'" - '+h.type).join('\n');
+  const topHooks=(strategy.topHooks||[]).map(h=>'**'+h.rank+' - '+h.type+'**\n"'+h.hook+'"\n'+h.why).join('\n\n');
+  const segments=(strategy.audienceSegments||[]).map(s=>'**'+s.name+'** - '+s.tone+'\n'+s.description+'\nAngles: '+(s.angles||[]).join(', ')).join('\n\n');
+  const formats=(strategy.formatRecommendations||[]).map(f=>'- **'+f.platform+' - '+f.format+'** ('+f.angle+'): '+f.notes).join('\n');
+  const hierarchy=(strategy.messagingHierarchy||[]).map(h=>'**Hook:** "'+h.hook+'"\n**Primary message:** '+h.primaryMessage+'\n**Proof points:** '+h.proofPoints+'\n**CTA:** '+h.cta+'\n**Script:** '+h.scriptStructure).join('\n\n---\n\n');
+  const dos=(strategy.compliance?.dos||[]).map(d=>'- checkmark '+d).join('\n');
+  const donts=(strategy.compliance?.donts||[]).map(d=>'- x '+d).join('\n');
+  const matrix=(strategy.testMatrix||[]).map(t=>'| '+t.id+' | "'+t.hook+'" | '+t.angle+' | '+t.platform+' | '+t.format+' | '+t.kpi+' | '+t.priority+' |').join('\n');
+
+  const pageContent='## Strategic Framing\n\n'+strategy.summary+'\n\n---\n\n## Brief Summary\n\n| Field | Value |\n|-------|-------|\n| Brand | '+brief.brand+' |\n| Industry | '+brief.industry+' |\n| Market | '+brief.market+' |\n| Goal | '+brief.goal+' |\n| Platforms | '+platforms+' |\n| Funnel | '+(brief.funnel||'Not specified')+' |\n| Tone | '+(brief.tone||'Not specified')+' |\n\n---\n\n## Ad Angles\n\n'+angles+'\n\n---\n\n## Hooks\n\n'+hooks+'\n\n---\n\n## Top 3 Hooks - CTR Analysis\n\n'+topHooks+'\n\n---\n\n## Audience Segments\n\n'+segments+'\n\n---\n\n## Format Recommendations\n\n'+formats+'\n\n---\n\n## Messaging Hierarchy\n\n'+hierarchy+'\n\n---\n\n## Compliance Guardrails\n\n**Disclaimer:**\n'+(strategy.compliance?.disclaimerTemplate||'')+'\n\n**Do:**\n'+dos+'\n\n**Do not:**\n'+donts+'\n\n---\n\n## A/B Test Matrix\n\n| ID | Hook | Angle | Platform | Format | KPI | Priority |\n|----|------|-------|----------|--------|-----|----------|\n'+matrix;
+
+  const toneMap={'Confident & premium':'Confident & premium','Educational & helpful':'Educational & helpful','Urgent & direct':'Urgent & direct','Aspirational & lifestyle':'Aspirational & lifestyle','Contrarian & bold':'Contrarian & bold','Friendly & approachable':'Friendly & approachable'};
+
+  const notionParams={
+    parent:{data_source_id:'0f7f5a43-1712-4c63-a28f-c16436088a72'},
+    pages:[{
+      icon:'🎯',
+      properties:{
+        'Brief Name':brief.briefName,
+        'Brand Name':brief.brand,
+        'Client':brief.client||'',
+        'Industry':brief.industry.toLowerCase().includes('fintech')||brief.industry.toLowerCase().includes('trading')?'Fintech / Trading':'Other',
+        'Product / Service':brief.product,
+        'Key USPs & Proof Points':brief.usps||'',
+        'Target Market':brief.market,
+        'Audience Age Range':brief.age||'',
+        'Audience Description':brief.audience,
+        'Campaign Goal':brief.goal,
+        'Funnel Stage':brief.funnel||null,
+        'Ad Tone':toneMap[brief.tone]||null,
+        'Platforms':JSON.stringify(brief.platforms),
+        'Compliance Constraints':brief.compliance||'',
+        'Things to Avoid':brief.avoid||'',
+        'Status':'Strategy Generated'
+      },
+      content:pageContent
+    }]
+  };
+
+  const result=await callNotionMCP('notion-create-pages',notionParams);
+  const allText=(result.content||[]).map(b=>b.text||'').join(' ');
+  const urlMatch=allText.match(/https:\/\/(?:www\.)?notion\.so\/[^\s"')]+|https:\/\/app\.notion\.com\/[^\s"')]+/);
+  return urlMatch?urlMatch[0]:null;
+}
+
+async function generate(){
+  const briefName=gv('briefName'),brand=gv('brand'),industry=gv('industry'),
+    product=gv('product'),audience=gv('audience'),market=gv('market'),goal=gv('goal'),
+    usps=gv('usps'),age=gv('age'),tone=gv('tone'),funnel=gv('funnel'),
+    compliance=gv('compliance'),avoid=gv('avoid'),client=gv('client'),
+    platforms=chips();
+
+  const errEl=document.getElementById('err');
+  errEl.style.display='none';
+  if(!briefName||!brand||!industry||!product||!audience||!market||!goal){
+    errEl.textContent='Please fill in all required fields (marked *).';
+    errEl.style.display='block';return;
+  }
+
+  const btn=document.getElementById('genBtn');
+  btn.disabled=true;
+  document.getElementById('spin').style.display='block';
+  document.getElementById('btnLbl').textContent='Working...';
+  document.getElementById('steps-wrap').style.display='block';
+  document.getElementById('output').innerHTML='';
+
+  const ctx='Brand: '+brand+' | Industry: '+industry+' | Product: '+product+' | USPs: '+(usps||'n/a')+' | Market: '+market+' | Age: '+(age||'n/a')+' | Audience: '+audience+' | Goal: '+goal+' | Funnel: '+(funnel||'n/a')+' | Platforms: '+(platforms.join(', ')||'n/a')+' | Tone: '+(tone||'Confident, modern')+' | Compliance: '+(compliance||'none')+' | Avoid: '+(avoid||'none');
+
+  const promptA='You are a senior performance marketing strategist. Brief: '+ctx+'\n\nReturn ONLY valid compact JSON (no markdown, no backticks, no newlines inside strings):\n{"summary":"2-sentence strategic framing","angles":[{"name":"","trigger":"","explanation":"1 sentence"}],"hooks":[{"text":"max 10 words","type":"e.g. Contrarian emotional"}],"topHooks":[{"rank":"Rank 1","hook":"","type":"","why":"2 sentences"}],"audienceSegments":[{"name":"","description":"1 sentence","tone":"","angles":["string"]}],"formatRecommendations":[{"platform":"","format":"","angle":"","notes":"1 sentence"}]}\n\nangles=5, hooks=6, topHooks=3, audienceSegments=3, formatRecommendations=4. All strings under 25 words. Return ONLY JSON.';
+
+  const promptB='You are a senior performance marketing strategist. Brief: '+ctx+'\n\nReturn ONLY valid compact JSON (no markdown, no backticks, no newlines inside strings):\n{"messagingHierarchy":[{"hook":"","primaryMessage":"","proofPoints":"","cta":"","scriptStructure":""}],"compliance":{"disclaimerTemplate":"","dos":[""],"donts":[""]},"testMatrix":[{"id":"T-01","hook":"max 7 words","angle":"","platform":"","format":"","kpi":"","priority":"High"}]}\n\nmessagingHierarchy=3, dos=5, donts=5, testMatrix=6 (T-01 to T-06, priority=High/Medium/Low). All strings under 20 words. Return ONLY JSON.';
+
+  let strategy,notionUrl;
+  try{
+    setStep(1,'active');
+    const[rawA,rawB]=await Promise.all([callClaude(promptA),callClaude(promptB)]);
+    strategy=Object.assign({},extractJSON(rawA),extractJSON(rawB));
+    setStep(1,'done');
+
+    setStep(2,'active');
+    const brief={briefName,brand,industry,product,usps,market,age,audience,goal,funnel,tone,platforms,compliance,avoid,client};
+    notionUrl=await saveToNotion(brief,strategy);
+    setStep(2,'done');
+    setStep(3,'done');
+    renderSuccess(strategy,notionUrl,briefName);
+  }catch(e){
+    const cur=[1,2,3].find(n=>document.getElementById('s'+n).classList.contains('active'))||1;
+    setStep(cur,'error');
+    document.getElementById('output').innerHTML='<div class="err" style="display:block;margin-top:1rem">Something went wrong: '+esc(e.message)+'</div>';
+  }finally{
+    btn.disabled=false;
+    document.getElementById('spin').style.display='none';
+    document.getElementById('btnLbl').textContent='Generate &amp; save to Notion &rarr;';
+  }
+}
+
+function renderSuccess(s,notionUrl,briefName){
+  const topHooks=(s.topHooks||[]).slice(0,3);
+  const angles=(s.angles||[]).slice(0,5);
+  document.getElementById('output').innerHTML=
+    '<div class="success-card">'+
+      '<div class="success-title">Strategy saved to Notion</div>'+
+      '<div class="success-body"><strong>'+esc(briefName)+'</strong> has been created in your Ad Strategy Briefs database with the full strategy.</div>'+
+      (notionUrl?'<a class="notion-link" href="'+esc(notionUrl)+'" target="_blank">Open in Notion &rarr;</a>':'<span style="font-size:12px;color:var(--muted)">Page created - check your Notion workspace</span>')+
+    '</div>'+
+    '<div class="preview">'+
+      '<div class="prev-lbl">Strategy preview</div>'+
+      '<div class="prev-sec"><div class="prev-sec-title">Strategic framing</div><div class="prev-text">'+esc(s.summary)+'</div></div>'+
+      '<div class="prev-sec"><div class="prev-sec-title">Top hooks</div><div class="prev-hooks">'+topHooks.map(h=>'<div class="prev-hook">"'+esc(h.hook)+'"</div>').join('')+'</div></div>'+
+      '<div class="prev-sec"><div class="prev-sec-title">Ad angles</div><div class="prev-tags">'+angles.map(a=>'<span class="prev-tag">'+esc(a.name)+'</span>').join('')+'</div></div>'+
+    '</div>'+
+    '<button class="new-btn" onclick="document.getElementById(\'output\').innerHTML=\'\';document.getElementById(\'steps-wrap\').style.display=\'none\';document.getElementById(\'form-box\').scrollIntoView({behavior:\'smooth\'})">&#8592; New brief</button>';
+  document.getElementById('output').scrollIntoView({behavior:'smooth',block:'start'});
+}
+</script>
+</body>
+</html>
